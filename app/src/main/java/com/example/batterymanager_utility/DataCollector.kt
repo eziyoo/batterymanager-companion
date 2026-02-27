@@ -34,7 +34,16 @@ class DataCollector(private val context: Context, private val dataPoints: ArrayL
             } else if (dataPoint == "ACTION_DISCHARGING") {
                 data += "," + (!batteryManager.isCharging).toString()
             } else if (dataPoint.startsWith("BATTERY")) {
-                data += "," + batteryManager.getIntProperty(dataPointsMapBATTERY[dataPoint]!!).toString()
+                // Safely retrieve the battery property to prevent crashes.
+                // If the requested property is unknown, append "0" to maintain a valid CSV structure.
+                val propertyId = dataPointsMapBATTERY[dataPoint]
+
+                if (propertyId != null) {
+                    data += "," + batteryManager.getIntProperty(propertyId).toString()
+                } else {
+                    android.util.Log.e("BatteryMgr", "Unknown BATTERY property requested: $dataPoint")
+                    data += ",0"
+                }
             }
         }
 
